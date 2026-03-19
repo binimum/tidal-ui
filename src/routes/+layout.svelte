@@ -1,5 +1,10 @@
 <script lang="ts">
+	import { fetchApiTargets } from '$lib/config';
 	import { onMount } from 'svelte';
+
+	onMount(() => {
+		fetchApiTargets();
+	});
 	import { get } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import '../app.css';
@@ -168,10 +173,10 @@
 	// Update page title with currently playing song
 	$effect(() => {
 		if (typeof document === 'undefined') return;
-		
+
 		const track = $playerStore.currentTrack;
 		const isPlaying = $playerStore.isPlaying;
-		
+
 		if (track) {
 			const artist = isSonglinkTrack(track) ? track.artistName : formatArtists(track.artists);
 			const title = track.title ?? 'Unknown Track';
@@ -808,7 +813,7 @@
 			0 4px 16px rgba(15, 23, 42, 0.3),
 			inset 0 1px 0 rgba(255, 255, 255, 0.08),
 			inset 0 0 60px rgba(255, 255, 255, 0.02);
-		transition: 
+		transition:
 			border-color 0.8s cubic-bezier(0.4, 0, 0.2, 1),
 			box-shadow var(--transition-slow, 0.3s ease),
 			transform var(--transition-base, 0.2s ease);
@@ -893,7 +898,7 @@
 	.toolbar-icon:hover {
 		transform: translateY(-2px);
 		border-color: rgba(148, 163, 184, 0.4);
-		box-shadow: 
+		box-shadow:
 			0 8px 24px rgba(8, 11, 19, 0.35),
 			0 0 20px rgba(59, 130, 246, 0.1);
 	}
@@ -919,9 +924,9 @@
 		background: transparent;
 		backdrop-filter: blur(var(--perf-blur-low, 24px)) saturate(var(--perf-saturate, 160%));
 		-webkit-backdrop-filter: blur(var(--perf-blur-low, 24px)) saturate(var(--perf-saturate, 160%));
-		transition: 
+		transition:
 			border-color 1.2s cubic-bezier(0.4, 0, 0.2, 1),
-			box-shadow 160ms ease, 
+			box-shadow 160ms ease,
 			transform 160ms ease;
 	}
 
@@ -987,7 +992,7 @@
 		border: 1px solid rgba(148, 163, 184, 0.25);
 		backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
 		-webkit-backdrop-filter: blur(48px) saturate(180%) brightness(1.05);
-		box-shadow: 
+		box-shadow:
 			0 25px 60px rgba(2, 6, 23, 0.5),
 			0 3px 15px rgba(15, 23, 42, 0.35),
 			inset 0 1px 0 rgba(255, 255, 255, 0.06),
@@ -996,7 +1001,7 @@
 		isolation: isolate;
 		will-change: transform;
 		transform: translateZ(0);
-		transition: 
+		transition:
 			border-color 1.2s cubic-bezier(0.4, 0, 0.2, 1),
 			box-shadow 0.3s ease;
 	}
@@ -1089,7 +1094,7 @@
 	.glass-option.is-active {
 		border-color: var(--bloom-accent, rgba(59, 130, 246, 0.6));
 		background: transparent;
-		box-shadow: 
+		box-shadow:
 			0 12px 28px rgba(59, 130, 246, 0.2),
 			inset 0 0 32px rgba(59, 130, 246, 0.06);
 	}
@@ -1318,7 +1323,7 @@
 			border-radius: 18px;
 			top: calc(var(--settings-menu-offset, 88px) - 8px);
 		}
-		
+
 
 		.settings-grid {
 			display: grid;

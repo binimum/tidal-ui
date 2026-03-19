@@ -13,78 +13,59 @@ export interface ApiClusterTarget {
 	category: 'auto-only';
 }
 
-const V2_API_TARGETS = [
+let V2_API_TARGETS: ApiClusterTarget[] = [
 	{
 		name: 'squid-api',
 		baseUrl: 'https://triton.squid.wtf',
 		weight: 15,
 		requiresProxy: false,
 		category: 'auto-only'
-	},
-	{
-		name: 'spotisaver-1',
-		baseUrl: 'https://hifi-one.spotisaver.net',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'spotisaver-2',
-		baseUrl: 'https://hifi-two.spotisaver.net',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'kinoplus',
-		baseUrl: 'https://tidal.kinoplus.online',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'hund',
-		baseUrl: 'https://hund.qqdl.site',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'katze',
-		baseUrl: 'https://katze.qqdl.site',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'maus',
-		baseUrl: 'https://maus.qqdl.site',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'vogel',
-		baseUrl: 'https://vogel.qqdl.site',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'wolf',
-		baseUrl: 'https://wolf.qqdl.site',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-	{
-		name: 'monochrome',
-		baseUrl: 'https://arran.monochrome.tf',
-		weight: 15,
-		requiresProxy: false,
-		category: 'auto-only'
-	},
-] satisfies ApiClusterTarget[];
+	}
+];
+
+let lastTargetFetch = 0;
+
+export async function fetchApiTargets() {
+	if (typeof window === 'undefined') return;
+	const now = Date.now();
+	if (now - lastTargetFetch < 15 * 60 * 1000) return;
+
+	const workers = [
+		'https://tidal-uptime.jiffy-puffs-1j.workers.dev/',
+		'https://tidal-uptime.props-76styles.workers.dev/'
+	];
+	const worker = workers[Math.floor(Math.random() * workers.length)];
+
+	try {
+		const res = await fetch(worker);
+		const data = await res.json();
+
+		if (data && Array.isArray(data.streaming)) {
+			V2_API_TARGETS = data.streaming.map((t: any, i: number) => ({
+				name: `worker-streaming-${i}`,
+				baseUrl: t.url,
+				weight: 15,
+				requiresProxy: false,
+				category: 'auto-only'
+			}));
+			lastTargetFetch = now;
+			v2WeightedTargets = null;
+			v1WeightedTargets = null;
+
+			// Update derived collections
+			ALL_API_TARGETS.length = 0;
+			ALL_API_TARGETS.push(...V2_API_TARGETS);
+			TARGET_COLLECTIONS.auto.length = 0;
+			TARGET_COLLECTIONS.auto.push(...ALL_API_TARGETS);
+
+			if (V2_API_TARGETS.length > 0) {
+				API_CONFIG.baseUrl = V2_API_TARGETS[0].baseUrl;
+			}
+		}
+	} catch (e) {
+		console.error('Failed to fetch targets from worker', e);
+	}
+}
 
 const ALL_API_TARGETS = [...V2_API_TARGETS] satisfies ApiClusterTarget[];
 const US_API_TARGETS = [] satisfies ApiClusterTarget[];
@@ -429,6 +410,7 @@ export async function fetchWithCORS(
 	}
 
 	const originTarget = findTargetForUrl(resolvedUrl);
+
 	if (!originTarget) {
 		return fetch(getProxiedUrl(resolvedUrl.toString()), {
 			...options
